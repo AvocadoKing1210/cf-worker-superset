@@ -1,0 +1,16 @@
+name = "execute-sql"
+main = "src/index.ts"
+compatibility_date = "2025-07-18"
+preview_urls = false
+
+[env.dev]
+name = "execute-sql-dev"
+
+
+[observability]
+enabled = false
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
