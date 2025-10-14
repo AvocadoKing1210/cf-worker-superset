@@ -35,21 +35,41 @@ export function makeRequest(url: string, timeout: number): Promise<TestResult> {
 export function parseArgs(): TestConfig {
   const args = process.argv.slice(2);
   const config: TestConfig = {
-    url: 'http://localhost:8787',
+    url: '',
     maxRetries: 3,
     retryInterval: 15,
     timeout: 30,
   };
 
-  for (let i = 0; i < args.length; i += 2) {
-    const key = args[i]?.replace('--', '');
-    const value = args[i + 1];
+  console.log('Raw arguments:', args);
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
     
-    if (key === 'url') config.url = value;
-    if (key === 'max-retries') config.maxRetries = parseInt(value, 10);
-    if (key === 'retry-interval') config.retryInterval = parseInt(value, 10);
-    if (key === 'timeout') config.timeout = parseInt(value, 10);
+    if (arg.startsWith('--')) {
+      const [key, value] = arg.includes('=') 
+        ? arg.replace('--', '').split('=', 2)
+        : [arg.replace('--', ''), args[i + 1]];
+      
+      console.log(`Parsing: ${key} = ${value}`);
+      
+      if (key === 'url' && value) config.url = value;
+      if (key === 'max-retries' && value) config.maxRetries = parseInt(value, 10);
+      if (key === 'retry-interval' && value) config.retryInterval = parseInt(value, 10);
+      if (key === 'timeout' && value) config.timeout = parseInt(value, 10);
+      
+      // Skip the next argument if we used it as a value
+      if (!arg.includes('=') && value) i++;
+    }
   }
 
+  console.log('Final config:', config);
+  
+  // Ensure URL is provided
+  if (!config.url) {
+    console.error('ERROR: URL is required. Use --url=https://your-worker.dev');
+    process.exit(1);
+  }
+  
   return config;
 }
