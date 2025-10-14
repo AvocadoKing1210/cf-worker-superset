@@ -38,8 +38,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   e2e-tests:
-    name: E2E Tests
-    runs-on: ubuntu-latest
     needs: build-and-deploy
     if: ${{ vars.DEV_WORKER_URL != '' }}
     uses: ./.github/workflows/e2e-test.yml
