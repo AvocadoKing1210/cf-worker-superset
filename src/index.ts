@@ -59,7 +59,7 @@ export default {
       switch (path) {
         case '/':
           return createResponse({
-            message: 'Superset API Worker now is running',
+            message: `Superset API Worker now is running - Message changed for prod test: ${env.NODE_ENV}`,
             timestamp: new Date().toISOString(),
             environment: env.NODE_ENV || 'development',
             hasApiKey: !!env.API_KEY,
