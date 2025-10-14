@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Lint, Type-check, Deploy (dev)
+    name: Build and Deploy (dev)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,12 +37,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      - name: Smoke test (optional)
-        if: ${{ vars.DEV_WORKER_URL != '' }}
-        run: |
-          echo "Hitting $DEV_WORKER_URL/health"
-          curl -fsSL "$DEV_WORKER_URL/health" | jq .
-        env:
-          DEV_WORKER_URL: ${{ vars.DEV_WORKER_URL }}
+  e2e-tests:
+    needs: build-and-deploy
+    if: ${{ vars.DEV_WORKER_URL != '' }}
+    uses: ./.github/workflows/e2e-test.yml
+    with:
+      worker_url: ${{ vars.DEV_WORKER_URL }}
+      max_retries: 3
+      retry_interval: 15
+      timeout_seconds: 30
 
 

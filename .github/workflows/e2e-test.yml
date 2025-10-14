@@ -1,0 +1,67 @@
+name: E2E Tests
+
+on:
+  workflow_call:
+    inputs:
+      worker_url:
+        description: 'Worker URL to test'
+        required: true
+        type: string
+      max_retries:
+        description: 'Maximum number of retries'
+        required: false
+        type: number
+        default: 3
+      retry_interval:
+        description: 'Seconds between retries'
+        required: false
+        type: number
+        default: 15
+      timeout_seconds:
+        description: 'Request timeout in seconds'
+        required: false
+        type: number
+        default: 30
+
+jobs:
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate worker URL
+        run: |
+          echo "Validating worker URL: ${{ inputs.worker_url }}"
+          curl -f -s --max-time 10 "${{ inputs.worker_url }}/health" > /dev/null || {
+            echo "ERROR: Worker URL is not accessible"
+            exit 1
+          }
+          echo "Worker URL is accessible"
+
+      - name: Run E2E tests
+        run: |
+          echo "Testing worker at: ${{ inputs.worker_url }}"
+          echo "Max retries: ${{ inputs.max_retries }}"
+          echo "Retry interval: ${{ inputs.retry_interval }}s"
+          echo "Timeout: ${{ inputs.timeout_seconds }}s"
+          
+          # Verify tsx is available
+          npx tsx --version
+          
+          # Run E2E tests with proper error handling
+          npm run test:e2e -- \
+            --url="${{ inputs.worker_url }}" \
+            --max-retries=${{ inputs.max_retries }} \
+            --retry-interval=${{ inputs.retry_interval }} \
+            --timeout=${{ inputs.timeout_seconds }}
