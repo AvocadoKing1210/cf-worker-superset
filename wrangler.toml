@@ -6,6 +6,9 @@ preview_urls = false
 [env.dev]
 name = "execute-sql-dev"
 
+[env.prod]
+name = "execute-sql-prod"
+
 
 [observability]
 enabled = false
