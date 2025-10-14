@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - cicd-test
 
 jobs:
   build-and-deploy:
