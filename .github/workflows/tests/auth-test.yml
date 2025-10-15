@@ -18,6 +18,16 @@ on:
         required: false
         type: number
         default: 30
+    secrets:
+      SUPERSET_BASE_URL:
+        description: 'Superset base URL'
+        required: true
+      SUPERSET_USERNAME:
+        description: 'Superset username'
+        required: true
+      SUPERSET_PASSWORD:
+        description: 'Superset password'
+        required: true
 
 jobs:
   auth-test:

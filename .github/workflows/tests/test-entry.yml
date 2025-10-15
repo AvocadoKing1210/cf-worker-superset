@@ -1,0 +1,56 @@
+name: Test Suite
+
+on:
+  workflow_call:
+    inputs:
+      worker_url:
+        description: 'Worker URL to test'
+        required: true
+        type: string
+      max_retries:
+        description: 'Maximum number of retries'
+        required: false
+        type: number
+        default: 3
+      retry_interval:
+        description: 'Seconds between retries'
+        required: false
+        type: number
+        default: 15
+      timeout_seconds:
+        description: 'Request timeout in seconds'
+        required: false
+        type: number
+        default: 30
+    secrets:
+      SUPERSET_BASE_URL:
+        description: 'Superset base URL'
+        required: true
+      SUPERSET_USERNAME:
+        description: 'Superset username'
+        required: true
+      SUPERSET_PASSWORD:
+        description: 'Superset password'
+        required: true
+
+jobs:
+  e2e-tests:
+    name: E2E Tests
+    uses: ./.github/workflows/tests/e2e-test.yml
+    with:
+      worker_url: ${{ inputs.worker_url }}
+      max_retries: ${{ inputs.max_retries }}
+      retry_interval: ${{ inputs.retry_interval }}
+      timeout_seconds: ${{ inputs.timeout_seconds }}
+
+  auth-tests:
+    name: Authentication Tests
+    uses: ./.github/workflows/tests/auth-test.yml
+    secrets:
+      SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
+      SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
+      SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
+    with:
+      max_retries: ${{ inputs.max_retries }}
+      retry_interval: ${{ inputs.retry_interval }}
+      timeout_seconds: ${{ inputs.timeout_seconds }}

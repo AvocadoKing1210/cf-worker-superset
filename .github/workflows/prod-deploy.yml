@@ -30,23 +30,20 @@ jobs:
       - name: Type check
         run: npm run type-check
 
-      - name: Run Authentication tests
-        env:
-          SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
-          SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
-          SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
-        run: npm run test:auth
-
       - name: Deploy to Cloudflare (prod)
         run: npx wrangler deploy --env=prod
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-  e2e-tests:
+  tests:
     needs: build-and-deploy
     if: ${{ vars.PROD_WORKER_URL != '' }}
-    uses: ./.github/workflows/e2e-test.yml
+    uses: ./.github/workflows/tests/test-entry.yml
+    secrets:
+      SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
+      SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
+      SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
     with:
       worker_url: ${{ vars.PROD_WORKER_URL }}
       max_retries: 3
