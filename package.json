@@ -8,12 +8,14 @@
     "deploy": "wrangler deploy --env=\"\"",
     "deploy:prod": "wrangler deploy --env=production",
     "type-check": "tsc --noEmit",
-    "test:e2e": "tsx tests/runner.ts"
+    "test:e2e": "tsx tests/runner.ts",
+    "test:auth": "tsx tests/auth/run-auth-tests.ts"
   },
   "devDependencies": {
-    "wrangler": "^4.42.2",
     "@cloudflare/workers-types": "^4.20241218.0",
+    "@types/node": "^24.7.2",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3",
-    "tsx": "^4.7.0"
+    "wrangler": "^4.42.2"
   }
 }

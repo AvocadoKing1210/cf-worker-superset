@@ -1,0 +1,86 @@
+name: Authentication Tests
+
+on:
+  workflow_call:
+    inputs:
+      max_retries:
+        description: 'Maximum number of retries'
+        required: false
+        type: number
+        default: 3
+      retry_interval:
+        description: 'Seconds between retries'
+        required: false
+        type: number
+        default: 2
+      timeout_seconds:
+        description: 'Request timeout in seconds'
+        required: false
+        type: number
+        default: 30
+
+jobs:
+  auth-test:
+    name: Authentication Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Superset credentials
+        run: |
+          echo "Validating Superset credentials..."
+          if [ -z "${{ secrets.SUPERSET_BASE_URL }}" ]; then
+            echo "ERROR: SUPERSET_BASE_URL secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPERSET_USERNAME }}" ]; then
+            echo "ERROR: SUPERSET_USERNAME secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPERSET_PASSWORD }}" ]; then
+            echo "ERROR: SUPERSET_PASSWORD secret is not set"
+            exit 1
+          fi
+          echo "✅ All Superset secrets are configured"
+
+      - name: Test Superset connectivity
+        run: |
+          echo "Testing Superset connectivity..."
+          curl -f -s --max-time 10 "${{ secrets.SUPERSET_BASE_URL }}/health" > /dev/null || {
+            echo "ERROR: Superset instance is not accessible at ${{ secrets.SUPERSET_BASE_URL }}"
+            exit 1
+          }
+          echo "✅ Superset instance is accessible"
+
+      - name: Run Authentication tests
+        env:
+          SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
+          SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
+          SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
+        run: |
+          echo "Running authentication tests..."
+          echo "Max retries: ${{ inputs.max_retries }}"
+          echo "Retry interval: ${{ inputs.retry_interval }}s"
+          echo "Timeout: ${{ inputs.timeout_seconds }}s"
+          
+          # Verify tsx is available
+          npx tsx --version
+          
+          # Run authentication tests
+          npm run test:auth
+
+      - name: Test Results Summary
+        if: always()
+        run: |
+          echo "Authentication test workflow completed"
+          echo "Check the logs above for detailed results"

@@ -31,6 +31,13 @@ jobs:
       - name: Type check
         run: npm run type-check
 
+      - name: Run Authentication tests
+        env:
+          SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
+          SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
+          SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
+        run: npm run test:auth
+
       - name: Deploy to Cloudflare (dev)
         run: npx wrangler deploy --env=dev
         env:

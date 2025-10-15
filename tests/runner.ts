@@ -11,6 +11,7 @@ import { parseArgs } from './utils/http';
 // Import all test suites
 import { healthTestSuite } from './health';
 import { indexTestSuite } from './index';
+import { authTestSuite } from './auth';
 
 async function runTestSuite(suite: TestSuite, config: TestConfig): Promise<boolean> {
   console.log(`\nRunning test suite: ${suite.name}`);
@@ -50,6 +51,7 @@ async function main(): Promise<void> {
   const testSuites: TestSuite[] = [
     healthTestSuite,
     indexTestSuite,
+    authTestSuite,
   ];
   
   let allPassed = true;
