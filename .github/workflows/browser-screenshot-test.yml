@@ -1,0 +1,107 @@
+name: Browser Screenshot Tests
+
+on:
+  workflow_call:
+    inputs:
+      worker_url:
+        description: 'Worker URL to test against'
+        required: true
+        type: string
+      max_retries:
+        description: 'Maximum number of retries'
+        required: false
+        type: number
+        default: 3
+      retry_interval:
+        description: 'Retry interval in seconds'
+        required: false
+        type: number
+        default: 15
+      timeout_seconds:
+        description: 'Test timeout in seconds'
+        required: false
+        type: number
+        default: 30
+    secrets:
+      CLOUDFLARE_ACCOUNT_ID:
+        description: 'Cloudflare Account ID for Browser Rendering API'
+        required: true
+      CLOUDFLARE_API_TOKEN:
+        description: 'Cloudflare API Token for Browser Rendering API'
+        required: true
+
+jobs:
+  browser-screenshot-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Cloudflare credentials
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "❌ CLOUDFLARE_ACCOUNT_ID is required"
+            exit 1
+          fi
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "❌ CLOUDFLARE_API_TOKEN is required"
+            exit 1
+          fi
+          echo "✅ Cloudflare credentials validated"
+
+      - name: Test connectivity to worker
+        run: |
+          echo "Testing connectivity to worker: ${{ inputs.worker_url }}"
+          curl -f -s "${{ inputs.worker_url }}/health" || {
+            echo "❌ Worker is not accessible"
+            exit 1
+          }
+          echo "✅ Worker is accessible"
+
+      - name: Run browser screenshot tests
+        env:
+          WORKER_URL: ${{ inputs.worker_url }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "🚀 Running browser screenshot tests..."
+          npm run test:browser-screenshots
+
+      - name: Upload screenshots as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-screenshots
+          path: screenshots/*.png
+          retention-days: 7
+
+      - name: Add test summary
+        if: always()
+        run: |
+          echo "## 📸 Browser Screenshot Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -d "screenshots" ] && [ "$(ls -A screenshots)" ]; then
+            echo "### Generated Screenshots:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            for file in screenshots/*.png; do
+              if [ -f "$file" ]; then
+                filename=$(basename "$file")
+                echo "- \`$filename\` (see Artifacts section)" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          else
+            echo "No screenshots were generated." >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Download screenshots from the Artifacts section above." >> $GITHUB_STEP_SUMMARY

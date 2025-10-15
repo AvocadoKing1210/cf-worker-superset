@@ -13,6 +13,7 @@ import { healthTestSuite } from './health';
 import { indexTestSuite } from './index';
 import { executeSqlTestSuite } from './execute-sql';
 import { authTestSuite } from './auth';
+import { browserScreenshotTestSuite } from './browser-screenshot';
 
 async function runTestSuite(suite: TestSuite, config: TestConfig): Promise<boolean> {
   console.log(`\nRunning test suite: ${suite.name}`);
@@ -54,6 +55,7 @@ async function main(): Promise<void> {
     indexTestSuite,
     authTestSuite,
     executeSqlTestSuite,
+    browserScreenshotTestSuite,
   ];
   
   let allPassed = true;
