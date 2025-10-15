@@ -46,4 +46,16 @@ jobs:
       retry_interval: 15
       timeout_seconds: 30
 
+  auth-tests:
+    needs: build-and-deploy
+    uses: ./.github/workflows/auth-test.yml
+    secrets:
+      SUPERSET_BASE_URL: ${{ secrets.SUPERSET_BASE_URL }}
+      SUPERSET_USERNAME: ${{ secrets.SUPERSET_USERNAME }}
+      SUPERSET_PASSWORD: ${{ secrets.SUPERSET_PASSWORD }}
+    with:
+      max_retries: 3
+      retry_interval: 15
+      timeout_seconds: 30
+
 
