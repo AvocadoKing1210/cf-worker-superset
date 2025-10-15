@@ -58,7 +58,7 @@ export class SupersetAuth {
         username: this.credentials.username,
         password: this.credentials.password,
         provider: 'db',
-        csrf_token: initialCsrfToken,
+        csrf_token: initialCsrfToken || '',
       });
 
       const loginResponse = await fetch(`${this.credentials.baseUrl}/login/`, {
@@ -105,7 +105,7 @@ export class SupersetAuth {
         };
       }
 
-      const csrfData = await csrfResponse.json();
+      const csrfData = await csrfResponse.json() as { result: string };
       this.csrfToken = csrfData.result;
 
       // Step 4: Get access token for API operations
@@ -125,14 +125,14 @@ export class SupersetAuth {
       });
 
       if (tokenResponse.ok) {
-        const tokenData = await tokenResponse.json();
+        const tokenData = await tokenResponse.json() as { access_token: string };
         this.accessToken = tokenData.access_token;
       }
 
       return {
         success: true,
         tokens: {
-          csrfToken: this.csrfToken,
+          csrfToken: this.csrfToken!,
           sessionCookies: this.sessionCookies || '',
           accessToken: this.accessToken || undefined,
         },
@@ -175,8 +175,8 @@ export class SupersetAuth {
     }
 
     return {
-      csrfToken: this.csrfToken,
-      sessionCookies: this.sessionCookies,
+      csrfToken: this.csrfToken!,
+      sessionCookies: this.sessionCookies!,
       accessToken: this.accessToken || undefined,
     };
   }

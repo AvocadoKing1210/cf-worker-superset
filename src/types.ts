@@ -37,7 +37,7 @@ export interface SupersetCredentials {
 export interface SupersetTokens {
   csrfToken: string;
   sessionCookies: string;
-  accessToken?: string;
+  accessToken?: string | undefined;
 }
 
 export interface SupersetAuthResult {
