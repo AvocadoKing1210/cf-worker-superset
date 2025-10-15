@@ -47,3 +47,32 @@ export interface SupersetAuthResult {
 }
 
 
+// Execute SQL endpoint types
+export interface ExecuteSqlRequest {
+  database_id: number;
+  sql: string;
+  full?: boolean;
+  limit?: number;
+}
+
+export interface ExecuteSqlMeta {
+  full: boolean;
+  effectiveLimit: number | null;
+  wasClamped: boolean;
+}
+
+// Minimal shape we forward from Superset; keep it open for flexibility
+export interface SupersetExecuteResult {
+  query_id?: number | string;
+  columns?: Array<{ name: string; type?: string }> | any[];
+  data?: any;
+  [key: string]: any;
+}
+
+export interface ExecuteSqlResponse {
+  status: 'ok';
+  meta: ExecuteSqlMeta;
+  result: SupersetExecuteResult;
+}
+
+

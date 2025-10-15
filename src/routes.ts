@@ -1,5 +1,9 @@
 import type { Env } from './types';
 import { createResponse } from './utils/response';
+import { corsHeaders } from './utils/response';
+import { authenticateWithSuperset } from './utils/auth';
+import { executeSql } from './utils/executeSql';
+import type { ExecuteSqlRequest } from './types';
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
   // Handle CORS preflight requests
@@ -35,6 +39,36 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
           status: 'healthy',
           timestamp: new Date().toISOString(),
         });
+
+      case '/execute-sql': {
+        if (request.method !== 'POST') {
+          return createResponse({ error: 'Method Not Allowed' }, 405);
+        }
+
+        // Parse body
+        let body: ExecuteSqlRequest;
+        try {
+          body = await request.json() as ExecuteSqlRequest;
+        } catch {
+          return createResponse({ error: 'Invalid JSON body' }, 400);
+        }
+        try {
+          const result = await executeSql(env as any, body);
+          return new Response(JSON.stringify({
+            status: result.status,
+            meta: result.meta,
+            ...result.result,
+          }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ error: (err as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+      }
 
       default:
         return createResponse({
