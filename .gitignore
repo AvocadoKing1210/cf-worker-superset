@@ -34,4 +34,7 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
+# experimenting documents and logs
 superset-*.md
+/screenshots
+cf-*.md

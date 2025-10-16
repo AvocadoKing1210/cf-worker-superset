@@ -9,7 +9,8 @@
     "deploy:prod": "wrangler deploy --env=production",
     "type-check": "tsc --noEmit",
     "test:e2e": "tsx tests/runner.ts",
-    "test:auth": "tsx tests/auth/run-auth-tests.ts"
+    "test:auth": "tsx tests/auth/run-auth-tests.ts",
+    "test:browser-screenshots": "tsx tests/browser-screenshot/run-browser-tests.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",

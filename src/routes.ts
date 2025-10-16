@@ -3,7 +3,8 @@ import { createResponse } from './utils/response';
 import { corsHeaders } from './utils/response';
 import { authenticateWithSuperset } from './utils/auth';
 import { executeSql } from './utils/executeSql';
-import type { ExecuteSqlRequest } from './types';
+import { createChart } from './utils/createChart';
+import type { ExecuteSqlRequest, ChartCreateRequest } from './types';
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
   // Handle CORS preflight requests
@@ -59,6 +60,39 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
             meta: result.meta,
             ...result.result,
           }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ error: (err as Error).message }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+      }
+
+      case '/charts/create': {
+        if (request.method !== 'POST') {
+          return createResponse({ error: 'Method Not Allowed' }, 405);
+        }
+
+        let body: ChartCreateRequest;
+        try {
+          body = await request.json() as ChartCreateRequest;
+        } catch {
+          return createResponse({ error: 'Invalid JSON body' }, 400);
+        }
+
+        // basic shape validation
+        const isFromQuery = (body as any).query_id != null;
+        const isFromSql = (body as any).database_id != null && typeof (body as any).sql === 'string';
+        if (!isFromQuery && !isFromSql) {
+          return createResponse({ error: 'Provide either query_id or (database_id and sql)' }, 400);
+        }
+
+        try {
+          const result = await createChart(env as any, body);
+          return new Response(JSON.stringify(result), {
             status: 200,
             headers: { 'Content-Type': 'application/json', ...corsHeaders },
           });

@@ -75,4 +75,45 @@ export interface ExecuteSqlResponse {
   result: SupersetExecuteResult;
 }
 
+// Chart creation types
+export type VizType =
+  | 'table'
+  | 'bar'
+  | 'line'
+  | 'area'
+  | 'pie'
+  | 'big_number'
+  | 'scatter';
+
+export interface ChartCreateFromQueryId {
+  query_id: number;
+  viz_type: VizType | string;
+  slice_name?: string;
+  params?: Record<string, unknown>;
+}
+
+export interface ChartCreateFromSql {
+  database_id: number;
+  sql: string;
+  viz_type: VizType | string;
+  slice_name?: string;
+  full?: boolean;
+  limit?: number;
+  params?: Record<string, unknown>;
+}
+
+export type ChartCreateRequest = ChartCreateFromQueryId | ChartCreateFromSql;
+
+export interface ChartCreateResponse {
+  status: 'ok';
+  datasource: string;
+  viz_type: string;
+  chart_id?: number;
+  explore_url?: string;
+  form_data_key?: string;
+  permalink_key?: string;
+  embed_url?: string;
+  meta?: ExecuteSqlMeta;
+}
+
 
