@@ -49,7 +49,8 @@ async function runBrowserScreenshotTests(): Promise<void> {
       if (result.success) {
         console.log(`PASSED: ${test.name}`);
         if (result.data?.screenshot_path) {
-          console.log(`Screenshot: ${result.data.screenshot_path}`);
+          console.log(`Screenshot saved: ${result.data.screenshot_path}`);
+          console.log(`Note: In CI/CD, screenshots will be available as downloadable artifacts`);
         }
       } else {
         console.log(`FAILED: ${test.name}`);

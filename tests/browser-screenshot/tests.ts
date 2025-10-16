@@ -80,6 +80,7 @@ export const browserScreenshotTestSuite: TestSuite = {
 
           console.log(`Screenshot saved: ${filePath}`);
           console.log(`Response time: ${responseTime}ms`);
+          console.log(`Note: In CI/CD, this will be uploaded as a downloadable artifact`);
 
           return {
             success: true,

@@ -89,7 +89,7 @@ jobs:
       - name: Add test summary
         if: always()
         run: |
-          echo "## 📸 Browser Screenshot Tests" >> $GITHUB_STEP_SUMMARY
+          echo "## Browser Screenshot Tests" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -d "screenshots" ] && [ "$(ls -A screenshots)" ]; then
             echo "### Generated Screenshots:" >> $GITHUB_STEP_SUMMARY
@@ -97,11 +97,11 @@ jobs:
             for file in screenshots/*.png; do
               if [ -f "$file" ]; then
                 filename=$(basename "$file")
-                echo "- \`$filename\` (see Artifacts section)" >> $GITHUB_STEP_SUMMARY
+                echo "- [$filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts) (Download from Artifacts)" >> $GITHUB_STEP_SUMMARY
               fi
             done
           else
             echo "No screenshots were generated." >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Note:** Download screenshots from the Artifacts section above." >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Click the links above to download screenshots from the Artifacts section." >> $GITHUB_STEP_SUMMARY
