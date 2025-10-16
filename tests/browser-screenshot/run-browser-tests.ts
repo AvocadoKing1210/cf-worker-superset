@@ -48,9 +48,6 @@ async function runBrowserScreenshotTests(): Promise<void> {
       const result = await test.run(config);
       if (result.success) {
         console.log(`PASSED: ${test.name}`);
-        if (result.data?.screenshot_path) {
-          console.log(`Screenshot: ${result.data.screenshot_path}`);
-        }
       } else {
         console.log(`FAILED: ${test.name}`);
         console.log(`   Error: ${result.message}`);
