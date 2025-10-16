@@ -29,6 +29,12 @@ on:
       CLOUDFLARE_API_TOKEN:
         description: 'Cloudflare API Token for Browser Rendering API'
         required: true
+      CLOUDFLARE_R2_TOKEN:
+        description: 'Cloudflare R2 Token for uploading screenshots'
+        required: true
+      R2_BUCKET_NAME:
+        description: 'R2 Bucket name for storing screenshots'
+        required: true
 
 jobs:
   browser-screenshot-test:
@@ -51,34 +57,37 @@ jobs:
       - name: Validate Cloudflare credentials
         run: |
           if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
-            echo "❌ CLOUDFLARE_ACCOUNT_ID is required"
+            echo "ERROR: CLOUDFLARE_ACCOUNT_ID is required"
             exit 1
           fi
           if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
-            echo "❌ CLOUDFLARE_API_TOKEN is required"
+            echo "ERROR: CLOUDFLARE_API_TOKEN is required"
             exit 1
           fi
-          echo "✅ Cloudflare credentials validated"
+          echo "SUCCESS: Cloudflare credentials validated"
 
       - name: Test connectivity to worker
         run: |
           echo "Testing connectivity to worker: ${{ inputs.worker_url }}"
           curl -f -s "${{ inputs.worker_url }}/health" || {
-            echo "❌ Worker is not accessible"
+            echo "ERROR: Worker is not accessible"
             exit 1
           }
-          echo "✅ Worker is accessible"
+          echo "SUCCESS: Worker is accessible"
 
       - name: Run browser screenshot tests
         env:
           WORKER_URL: ${{ inputs.worker_url }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_R2_TOKEN: ${{ secrets.CLOUDFLARE_R2_TOKEN }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
-          echo "🚀 Running browser screenshot tests..."
+          echo "Running browser screenshot tests..."
           npm run test:browser-screenshots
 
-      - name: Upload screenshots as artifacts
+
+      - name: Upload screenshots as artifacts (backup)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -91,17 +100,8 @@ jobs:
         run: |
           echo "## Browser Screenshot Tests" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -d "screenshots" ] && [ "$(ls -A screenshots)" ]; then
-            echo "### Generated Screenshots:" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            for file in screenshots/*.png; do
-              if [ -f "$file" ]; then
-                filename=$(basename "$file")
-                echo "- [$filename](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts) (Download from Artifacts)" >> $GITHUB_STEP_SUMMARY
-              fi
-            done
-          else
-            echo "No screenshots were generated." >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "### Screenshots:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Note:** Click the links above to download screenshots from the Artifacts section." >> $GITHUB_STEP_SUMMARY
+          echo "Screenshots have been uploaded to R2 and direct image URLs are shown in the test logs above." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Look for 'R2 URL:' in the console output above for direct image links." >> $GITHUB_STEP_SUMMARY

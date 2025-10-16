@@ -66,6 +66,8 @@ jobs:
     secrets:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_R2_TOKEN: ${{ secrets.CLOUDFLARE_R2_TOKEN }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
     with:
       worker_url: ${{ vars.DEV_WORKER_URL }}
       max_retries: 3

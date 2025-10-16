@@ -1,6 +1,6 @@
 import { TestSuite, TestResult } from '../types';
 import { BrowserTestConfig, ScreenshotTest, ScreenshotResult } from './types';
-import { BrowserRenderer, generateSelectorFromColumns, saveScreenshotToFile } from './utils/browser';
+import { BrowserRenderer, generateSelectorFromColumns, saveScreenshotToFile, uploadToR2 } from './utils/browser';
 import { postJson } from '../utils/http';
 
 export const browserScreenshotTestSuite: TestSuite = {
@@ -76,10 +76,15 @@ export const browserScreenshotTestSuite: TestSuite = {
           const filename = `${test.name}-${Date.now()}.png`;
           const filePath = saveScreenshotToFile(screenshotResult.screenshot!, filename);
           
+          // Step 4: Upload to R2
+          const r2Url = await uploadToR2(filePath, filename);
+          
           const responseTime = Date.now() - startTime;
 
-          console.log(`Screenshot saved: ${filePath}`);
           console.log(`Response time: ${responseTime}ms`);
+          if (r2Url) {
+            console.log(`R2 URL: ${r2Url}`);
+          }
           console.log(`Note: In CI/CD, this will be uploaded as a downloadable artifact`);
 
           return {
@@ -148,7 +153,7 @@ export const browserScreenshotTestSuite: TestSuite = {
             };
           }
 
-          console.log(`✅ Chart created successfully`);
+          console.log(`Chart created successfully`);
 
           // Step 2: Capture screenshot using Cloudflare Browser Rendering API
           const renderer = new BrowserRenderer(config.cloudflare_account_id, config.cloudflare_api_token);
@@ -173,7 +178,6 @@ export const browserScreenshotTestSuite: TestSuite = {
           
           const responseTime = Date.now() - startTime;
 
-          console.log(`📸 Screenshot saved: ${filePath}`);
 
           return {
             success: true,

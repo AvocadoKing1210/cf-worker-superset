@@ -127,3 +127,49 @@ export function saveScreenshotToFile(base64Data: string, filename: string): stri
   
   return filePath;
 }
+
+export async function uploadToR2(filePath: string, filename: string): Promise<string | null> {
+  const fs = require('fs');
+  const path = require('path');
+  
+  // Check if R2 credentials are available
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const r2Token = process.env.CLOUDFLARE_R2_TOKEN;
+  const bucketName = process.env.R2_BUCKET_NAME;
+  
+  if (!accountId || !r2Token || !bucketName) {
+    console.log('R2 credentials not available, skipping upload');
+    return null;
+  }
+  
+  try {
+    // Read the file
+    const fileBuffer = fs.readFileSync(filePath);
+    
+    // Upload to R2
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${filename}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${r2Token}`,
+          'Content-Type': 'image/png',
+        },
+        body: fileBuffer,
+      }
+    );
+    
+    if (response.ok) {
+      const r2Url = `https://runner-bucket.r2.zeelu.me/${filename}`;
+      console.log(`Uploaded to R2: ${r2Url}`);
+      return r2Url;
+    } else {
+      const errorText = await response.text();
+      console.log(`R2 upload failed: ${response.status} - ${errorText}`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`R2 upload error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return null;
+  }
+}
